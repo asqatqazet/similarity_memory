@@ -1,0 +1,8 @@
+string key                 
+string value_json           # If empty, this is a query.
+                            # If provided, must be a JSON string like:
+                            # {"available_to_llm": bool, "data": ...}
+---
+bool success                # Did the operation succeed?
+bool cache_hit              # True if the response came from the cache
+string response_data        # The final data (from cache or LLM)

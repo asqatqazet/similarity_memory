@@ -1,0 +1,4 @@
+string query            # The main prompt
+string context          # Optional context data
+---
+string answer           # The LLM's response
