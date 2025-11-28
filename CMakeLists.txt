@@ -7,6 +7,8 @@ catkin_python_setup()
 find_package(catkin REQUIRED COMPONENTS
   rospy
   std_msgs
+  actionlib_msgs
+  actionlib
   message_generation
 )
 
@@ -16,13 +18,20 @@ add_service_files(
   LLMQuery.srv
 )
 
+add_action_files(
+  DIRECTORY action
+  FILES
+  PromptTextLLM.action
+)
+
 generate_messages(
   DEPENDENCIES
   std_msgs
+  actionlib_msgs
 )
 
 catkin_package(
-  CATKIN_DEPENDS message_runtime
+  CATKIN_DEPENDS actionlib_msgs message_runtime
 )
 
 include_directories(

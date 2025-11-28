@@ -1,8 +1,7 @@
-string key                 
-string value_json           # If empty, this is a query.
-                            # If provided, must be a JSON string like:
-                            # {"available_to_llm": bool, "data": ...}
+string key   
+bool flag
+string hint             # If empty, this is a query.
+
 ---
 bool success                # Did the operation succeed?
-bool cache_hit              # True if the response came from the cache
 string response_data        # The final data (from cache or LLM)
