@@ -1,7 +1,6 @@
-string key   
-bool flag
-string hint             # If empty, this is a query.
-
+string key                 
+bool flag          
+string hint
 ---
 bool success                # Did the operation succeed?
-string response_data        # The final data (from cache or LLM)
+string response        # The final data (from cache or LLM)

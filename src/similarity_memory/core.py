@@ -12,7 +12,7 @@ class SimilarityMemoryCache:
     """
 
     def __init__(self,
-                 threshold: float = 0.8,
+                 threshold: float = 0.6,
                  max_size: Optional[int] = None,
                  model_name: str = 'all-MiniLM-L6-v2'):
         
