@@ -13,7 +13,8 @@ find_package(catkin REQUIRED COMPONENTS
 add_service_files(
   FILES
   ProcessData.srv
-  LLMQuery.srv
+  PromptLLM.srv
+  MemoryQuery.srv
 )
 
 generate_messages(

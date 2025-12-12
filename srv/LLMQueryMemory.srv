@@ -1,0 +1,5 @@
+string key                  # Key/question to look up
+---
+bool success                # Whether an answer was produced
+string answer               # Cached answer text (empty if miss)
+float32 similarity_score    # Cosine similarity for cache hits, 0.0 otherwise
