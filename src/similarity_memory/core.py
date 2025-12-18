@@ -64,19 +64,23 @@ class SimilarityMemoryCache:
 
         best_match_key: Optional[str] = None
         best_match_value: Any = None
-        best_match_score: float = -1.0
+        best_match_score: float = float('-inf')
 
         for key, value, stored_embedding in self.memory:
             sim_score = cosine_similarity(query_embedding, stored_embedding)[0][0]
-            
-            if sim_score >= self.threshold:
-                if sim_score > best_match_score:
-                    best_match_score = sim_score
-                    best_match_key = key
-                    best_match_value = value
+            if sim_score > best_match_score:
+                best_match_score = sim_score
+                best_match_key = key
+                best_match_value = value
 
-        if best_match_key is not None:
+        if best_match_key is None:
+            return None, 0.0
+
+        if best_match_score >= self.threshold:
             rospy.loginfo(f"Found match via key: '{best_match_key}' (Similarity: {best_match_score:.4f})")
             return best_match_value, best_match_score
         else:
-            return None, 0.0
+            rospy.loginfo(
+                f"No match reached threshold {self.threshold:.2f}. Best candidate was '{best_match_key}' with similarity {best_match_score:.4f}."
+            )
+            return None, best_match_score

@@ -132,8 +132,9 @@ def handle_llm_query(req):
             answer_text = cached_value
             success = True
         else:
-            rospy.loginfo(f"LLM query cache MISS for '{req.key}'. Returning empty result.")
-            similarity_score = 0.0
+            rospy.loginfo(
+                f"LLM query cache MISS for '{req.key}'. Best similarity was {similarity_score:.4f} (threshold {g_cache.threshold:.2f})."
+            )
             answer_text = ""
             success = False
 
