@@ -12,10 +12,11 @@ class SimilarityMemoryCache:
     """
 
     def __init__(self,
-                 threshold: float = 0.6,
+                 threshold: float = 0.3,
                  max_size: Optional[int] = None,
-                 model_name: str = 'all-MiniLM-L6-v2'):
-        
+                 model_name: str = 'all-MiniLM-L6-v2',
+                 fact_file: str = 'fact.json'):
+
         if not (0.0 <= threshold <= 1.0):
             raise ValueError("Similarity threshold must be between 0.0 and 1.0")
 
@@ -23,6 +24,7 @@ class SimilarityMemoryCache:
         self.max_size = max_size
         self.memory: Deque[Tuple[str, Any, np.ndarray]] = deque(maxlen=self.max_size)
 
+        # 1. Load the embedding model
         rospy.loginfo(f"Loading embedding model '{model_name}'...")
         try:
             self.model = SentenceTransformer(model_name)
@@ -30,6 +32,43 @@ class SimilarityMemoryCache:
         except Exception as e:
             rospy.logerr(f"Failed to load model '{model_name}': {e}")
             raise
+
+        # 2. Load default memories from file
+        self.load_memories_from_json(fact_file)
+
+        rospy.loginfo("Initialization complete.")
+
+    def load_memories_from_json(self, file_path: str):
+        """
+        Parses the fact.json file and populates the memory cache.
+        """
+        if not os.path.exists(file_path):
+            rospy.logwarn(f"Fact file '{file_path}' not found. Memory remains empty.")
+            return
+
+        try:
+            with open(file_path, 'r') as f:
+                data = json.load(f)
+
+            # Access the "memory" list from the JSON structure
+            facts_to_load = data.get("memory", [])
+
+            rospy.loginfo(f"Populating cache with {len(facts_to_load)} memories from {file_path}...")
+
+            for entry in facts_to_load:
+                item = entry.get("item", "")
+                fun_fact = entry.get("fun_facts", "")
+
+                # Only add if the 'item' is not empty
+                if item:
+                    self.add(item, fun_fact)
+
+            rospy.loginfo(f"Successfully loaded {len(self.memory)} items into memory.")
+
+        except json.JSONDecodeError as e:
+            rospy.logerr(f"Failed to parse JSON in {file_path}: {e}")
+        except Exception as e:
+            rospy.logerr(f"An unexpected error occurred while loading {file_path}: {e}")
 
     def _get_embedding(self, text: str) -> np.ndarray:
         embedding = self.model.encode(text)
@@ -84,3 +123,30 @@ class SimilarityMemoryCache:
                 f"No match reached threshold {self.threshold:.2f}. Best candidate was '{best_match_key}' with similarity {best_match_score:.4f}."
             )
             return None, best_match_score
+
+
+# --- MAIN BLOCK ---
+if __name__ == "__main__":
+    # Initialize the ROS node
+    rospy.init_node('memory_cache_test_node', anonymous=True)
+
+    try:
+        # Create instance (assumes fact.json is in the same folder)
+        cache = SimilarityMemoryCache(threshold=0.5, fact_file='fact.json')
+
+        # Test Query
+        test_query = "Tell me about the chocolate on the shelf"
+        rospy.loginfo(f"Querying: '{test_query}'")
+
+        result, score = cache.query(test_query)
+
+        if result:
+            print(f"\n[SUCCESS] Result: {result}")
+            print(f"[SCORE] {score:.4f}")
+        else:
+            print("\n[FAILURE] No relevant memory found above threshold.")
+
+    except rospy.ROSInterruptException:
+        pass
+    except Exception as e:
+        rospy.logerr(f"Node execution failed: {e}")
